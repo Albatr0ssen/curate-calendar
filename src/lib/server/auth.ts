@@ -1,5 +1,5 @@
 import { db } from './db';
-import { Calendar } from './db/schema';
+import { Calendar, Session, User } from './db/schema';
 
 export const SESSION_COOKIE_NAME = 'yep';
 
@@ -7,6 +7,8 @@ export type SessionData = {
 	username: string;
 	calendars: (typeof Calendar.$inferSelect)[];
 };
+
+export async function createSession(userId: string) {}
 
 export async function getSessionData(sessionId: string | undefined) {
 	if (sessionId == undefined) return;
