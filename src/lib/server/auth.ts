@@ -1,0 +1,32 @@
+import { db } from './db';
+import { Calendar } from './db/schema';
+
+export const SESSION_COOKIE_NAME = 'yep';
+
+export type SessionData = {
+	username: string;
+	calendars: (typeof Calendar.$inferSelect)[];
+};
+
+export async function getSessionData(sessionId: string | undefined) {
+	if (sessionId == undefined) return;
+
+	const session = await db.query.Session.findFirst({
+		with: {
+			user: true,
+			calendars: true
+		},
+		where: {
+			id: sessionId
+		}
+	});
+
+	if (session == undefined || session.user == undefined) return;
+
+	const sessionData: SessionData = {
+		username: session.user.username,
+		calendars: session.calendars
+	};
+
+	return sessionData;
+}
