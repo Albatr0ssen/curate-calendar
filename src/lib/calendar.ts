@@ -32,22 +32,21 @@ export async function getIcsCalendar(calendar: typeof Calendar.$inferSelect) {
 	let icsCalendar = icsCalendarCache.get(calendar.id);
 	if (icsCalendar != undefined) {
 		console.log('Using cache!');
-		return icsCalendar;
+	} else {
+		const response = await fetch(calendar.url);
+		const icsCalendarContent = await response.text();
+		icsCalendar = convertIcsCalendar(undefined, icsCalendarContent);
+		if (icsCalendar.events == undefined) icsCalendar.events = [];
+		icsCalendar.events = icsCalendar.events.sort(
+			(a, b) => a.start.date.getTime() - b.start.date.getTime()
+		);
+
+		icsCalendarCache.set(calendar.id, icsCalendar);
+		setTimeout(() => {
+			icsCalendarCache.delete(calendar.id);
+		}, ICS_CALENDAR_CACHE_TIMEOUT_MS);
 	}
-
-	const response = await fetch(calendar.url);
-	const icsCalendarContent = await response.text();
-	icsCalendar = convertIcsCalendar(undefined, icsCalendarContent);
-	if (icsCalendar.events == undefined) icsCalendar.events = [];
-	icsCalendar.events = icsCalendar.events.sort(
-		(a, b) => a.start.date.getTime() - b.start.date.getTime()
-	);
-
-	icsCalendarCache.set(calendar.id, icsCalendar);
-	setTimeout(() => {
-		icsCalendarCache.delete(calendar.id);
-	}, ICS_CALENDAR_CACHE_TIMEOUT_MS);
-	return icsCalendar;
+	return structuredClone(icsCalendar);
 }
 
 export async function getCalendarEventViews(calendarId: string) {
@@ -79,7 +78,7 @@ export async function getCalendarEventViews(calendarId: string) {
 	return calendarEventViews;
 }
 
-export async function getFilteredCalendar(calendarPid: string) {
+export async function getCuratedCalendar(calendarPid: string) {
 	const calendar = await db.query.Calendar.findFirst({
 		with: {
 			events: true
