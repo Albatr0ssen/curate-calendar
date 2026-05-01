@@ -60,13 +60,11 @@ export const curateCalendarEvent = command(
 		if (calendar == undefined) error(403);
 
 		if (becomeCurated) {
-			console.log('Curating', calendarId, eventUid);
 			await db.insert(Event).values({
 				calendarId,
 				eventUid
 			});
 		} else {
-			console.log('Removing', calendarId, eventUid);
 			await db
 				.delete(Event)
 				.where(and(eq(Event.calendarId, calendarId), eq(Event.eventUid, eventUid)));

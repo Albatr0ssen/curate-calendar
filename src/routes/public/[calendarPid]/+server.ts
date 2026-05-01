@@ -7,5 +7,6 @@ export const GET: RequestHandler = async ({ params }) => {
 	if (calendarPid == undefined) error(400);
 	const filteredCalendar = await getFilteredCalendar(calendarPid);
 	if (filteredCalendar == undefined) error(404);
+	console.log(`${new Date().toISOString()}: Getting ${calendarPid}`);
 	return text(filteredCalendar);
 };

@@ -7,8 +7,8 @@ import { convertIcsCalendar, generateIcsCalendar, type IcsCalendar } from 'ts-ic
 export type CalendarEventView = {
 	uid: string;
 	summary: string;
-	date: string;
-	time: string;
+	start: Date;
+	end?: Date;
 	location: string;
 	curated: boolean;
 };
@@ -25,7 +25,6 @@ export function getCuratedUids(calendarEvents: (typeof Event.$inferSelect)[]) {
 	calendarEvents.forEach((calEvent) => {
 		curatedUids.add(calEvent.eventUid);
 	});
-	console.log(curatedUids);
 	return curatedUids;
 }
 
@@ -37,7 +36,6 @@ export async function getIcsCalendar(calendar: typeof Calendar.$inferSelect) {
 	}
 
 	const response = await fetch(calendar.url);
-	console.log(response);
 	const icsCalendarContent = await response.text();
 	icsCalendar = convertIcsCalendar(undefined, icsCalendarContent);
 	if (icsCalendar.events == undefined) icsCalendar.events = [];
@@ -70,15 +68,13 @@ export async function getCalendarEventViews(calendarId: string) {
 	(icsCalendar.events ?? []).forEach((icsEvent) => {
 		calendarEventViews.push({
 			uid: icsEvent.uid,
-			summary: `${icsEvent.summary}`,
-			date: `${getDate(icsEvent.start.date)}`,
-			time: `${getTime(icsEvent.start.date)} - ${icsEvent.end ? getTime(icsEvent.end.date) : ''}`,
-			location: `${icsEvent.location}`,
+			summary: icsEvent.summary,
+			start: icsEvent.start.date,
+			end: icsEvent.end?.date,
+			location: icsEvent.location ?? '',
 			curated: curatedUids.has(icsEvent.uid)
 		});
 	});
-
-	console.log(calendarEventViews);
 
 	return calendarEventViews;
 }

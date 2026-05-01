@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib';
+	import { getDate, getTime } from '$lib/date';
 	import { curateCalendarEvent, getCalendarEvents } from '$lib/remote/calendar.remote';
 	import type { PageProps } from './$types';
 
@@ -38,7 +39,14 @@
 					>
 						<div class="flex flex-col whitespace-pre-line">
 							<span class="font-bold">{calendarEvent.summary}</span>
-							<span>{calendarEvent.date} | {calendarEvent.time}</span>
+							<div>
+								<span>{getDate(calendarEvent.start)} |</span>
+								<span>
+									{getTime(calendarEvent.start)}-{calendarEvent.end
+										? getTime(calendarEvent.end)
+										: ''}
+								</span>
+							</div>
 							<span>{calendarEvent.location}</span>
 						</div>
 						<div class="flex h-full w-full items-center justify-center pr-5">
