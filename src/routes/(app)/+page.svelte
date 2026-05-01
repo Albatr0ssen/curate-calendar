@@ -1,19 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib';
-	import { createCalendar, getCalendarEvents, getCalendars } from '$lib/remote/calendar.remote';
-
-	function getDate(date: Date) {
-		const year = date.getFullYear();
-		const month = (date.getMonth() + 1).toString().padStart(2, '0');
-		const day = date.getDate().toString().padStart(2, '0');
-		return `${year}-${month}-${day}`;
-	}
-
-	function getTime(date: Date) {
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-		return `${hours}:${minutes}`;
-	}
+	import { createCalendar, getCalendars } from '$lib/remote/calendar.remote';
 </script>
 
 <svelte:boundary>

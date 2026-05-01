@@ -1,6 +1,6 @@
 import { getRequestEvent } from '$app/server';
 import { db } from './db';
-import { Calendar, Session, User } from './db/schema';
+import { Calendar } from './db/schema';
 import { error } from '@sveltejs/kit';
 
 export const SESSION_COOKIE_NAME = 'yep';

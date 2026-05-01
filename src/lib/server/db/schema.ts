@@ -1,6 +1,5 @@
-import { randomString } from '$lib';
-import { randomBytes } from 'crypto';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { randomString } from './utils';
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const User = sqliteTable('users', {
 	id: text('id')
