@@ -3,7 +3,7 @@
 </script>
 
 <div class="flex h-screen w-screen items-center justify-center">
-	<div class="p-5 md:w-full lg:w-[30%]">
+	<div class="w-175 p-20">
 		<form
 			class="flex w-full flex-col items-center gap-5 rounded-xl bg-green-200 pt-12 pb-12"
 			{...login}

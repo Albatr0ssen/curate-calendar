@@ -1,3 +1,5 @@
+import { randomString } from '$lib';
+import { randomBytes } from 'crypto';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const User = sqliteTable('users', {
@@ -21,6 +23,10 @@ export const Calendar = sqliteTable('calendars', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
+	pid: text('pid')
+		.primaryKey()
+		.unique()
+		.$defaultFn(() => randomString(32)),
 	userId: text('user_id')
 		.references(() => User.id)
 		.notNull(),

@@ -11,5 +11,11 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.Session.userId,
 			to: r.Calendar.userId
 		})
+	},
+	Calendar: {
+		events: r.many.Event({
+			from: r.Calendar.id,
+			to: r.Event.calendarId
+		})
 	}
 }));
