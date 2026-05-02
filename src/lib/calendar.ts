@@ -92,6 +92,8 @@ export async function getCuratedCalendar(calendarPid: string) {
 	const icsCalendar = await getIcsCalendar(calendar);
 	const curatedUids = getCuratedUids(calendar.events);
 
+	icsCalendar.name = calendar.name;
+
 	if (icsCalendar.events != undefined) {
 		icsCalendar.events = icsCalendar.events.filter((icsEvent) => curatedUids.has(icsEvent.uid));
 	}
