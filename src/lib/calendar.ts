@@ -13,7 +13,7 @@ export type CalendarEventView = {
 	curated: boolean;
 };
 
-const ICS_CALENDAR_CACHE_TIMEOUT_MS = 10 * 60 * 60 * 1000;
+const ICS_CALENDAR_CACHE_TIMEOUT_MS = 10 * 60 * 1000;
 const icsCalendarCache = new Map<string, IcsCalendar>();
 
 export async function getUserCalendar(calendars: SessionData['calendars'], calendarId: string) {
@@ -31,7 +31,7 @@ export function getCuratedUids(calendarEvents: (typeof Event.$inferSelect)[]) {
 export async function getIcsCalendar(calendar: typeof Calendar.$inferSelect) {
 	let icsCalendar = icsCalendarCache.get(calendar.id);
 	if (icsCalendar != undefined) {
-		console.log('Using cache!');
+		console.log(`Using cache! (${calendar.id})`);
 	} else {
 		const response = await fetch(calendar.url);
 		const icsCalendarContent = await response.text();
