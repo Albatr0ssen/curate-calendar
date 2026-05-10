@@ -7,6 +7,7 @@ import { error } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { getSession } from '$lib/server/auth';
 import { getCalendarEventViews, getIcsCalendar, getUserCalendar } from '$lib/calendar';
+import { timed } from '$lib';
 
 export const getCalendars = query(async () => {
 	const { locals } = getRequestEvent();
@@ -55,21 +56,27 @@ export const curateCalendarEvent = command(
 		becomeCurated: v.boolean()
 	}),
 	async ({ calendarId, eventUid, becomeCurated }) => {
+		console.log('\nCurate calendar event start');
 		const { calendars } = getSession();
 		const calendar = await getUserCalendar(calendars, calendarId);
 		if (calendar == undefined) error(403);
 
 		if (becomeCurated) {
-			await db.insert(Event).values({
-				calendarId,
-				eventUid
+			await timed('insert event', async () => {
+				await db.insert(Event).values({
+					calendarId,
+					eventUid
+				});
 			});
 		} else {
-			await db
-				.delete(Event)
-				.where(and(eq(Event.calendarId, calendarId), eq(Event.eventUid, eventUid)));
+			await timed('delete event', async () => {
+				await db
+					.delete(Event)
+					.where(and(eq(Event.calendarId, calendarId), eq(Event.eventUid, eventUid)));
+			});
 		}
 
 		await getCalendarEvents(calendarId).refresh();
+		console.log('Curate calendar event end\n');
 	}
 );

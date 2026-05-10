@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { getSessionData, SESSION_COOKIE_NAME } from '$lib/server/auth';
-import { migrateDB } from '$lib/server/db';
+import { db, migrateDB } from '$lib/server/db';
 import type { Handle } from '@sveltejs/kit';
 import type { ServerInit } from '@sveltejs/kit';
+import { sql } from 'drizzle-orm';
 
 export const init: ServerInit = async () => {
 	if (env.NODE_ENV == 'production') {

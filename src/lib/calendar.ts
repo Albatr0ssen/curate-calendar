@@ -1,3 +1,4 @@
+import { timed } from '$lib';
 import { getDate, getTime } from './date';
 import type { SessionData } from './server/auth';
 import { db } from './server/db';
@@ -50,28 +51,35 @@ export async function getIcsCalendar(calendar: typeof Calendar.$inferSelect) {
 }
 
 export async function getCalendarEventViews(calendarId: string) {
-	const calendar = await db.query.Calendar.findFirst({
-		with: {
-			events: true
-		},
-		where: {
-			id: calendarId
-		}
+	const calendar = await timed('calendar event views', async () => {
+		return await db.query.Calendar.findFirst({
+			with: {
+				events: true
+			},
+			where: {
+				id: calendarId
+			}
+		});
 	});
+
 	if (calendar == undefined) return undefined;
 
 	const icsCalendar = await getIcsCalendar(calendar);
 	const calendarEventViews: CalendarEventView[] = [];
 	const curatedUids = getCuratedUids(calendar.events);
 
-	(icsCalendar.events ?? []).forEach((icsEvent) => {
-		calendarEventViews.push({
-			uid: icsEvent.uid,
-			summary: icsEvent.summary,
-			start: icsEvent.start.date,
-			end: icsEvent.end?.date,
-			location: icsEvent.location ?? '',
-			curated: curatedUids.has(icsEvent.uid)
+	const icsEvents = icsCalendar.events ?? [];
+
+	await timed('pusing calendar event views', async () => {
+		icsEvents.forEach((icsEvent) => {
+			calendarEventViews.push({
+				uid: icsEvent.uid,
+				summary: icsEvent.summary,
+				start: icsEvent.start.date,
+				end: icsEvent.end?.date,
+				location: icsEvent.location ?? '',
+				curated: curatedUids.has(icsEvent.uid)
+			});
 		});
 	});
 
