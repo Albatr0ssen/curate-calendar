@@ -38,6 +38,15 @@ export const createCalendar = form(
 	}
 );
 
+export const deleteCalendar = command(v.string(), async (calendarId) => {
+	const { calendars } = getSession();
+	const calendar = await getUserCalendar(calendars, calendarId);
+	if (calendar == undefined) error(403);
+
+	await db.delete(Calendar).where(eq(Calendar.id, calendarId));
+	getCalendars().refresh();
+});
+
 export const getCalendarEvents = query(v.string(), async (calendarId) => {
 	const { calendars } = getSession();
 	const calendar = await getUserCalendar(calendars, calendarId);

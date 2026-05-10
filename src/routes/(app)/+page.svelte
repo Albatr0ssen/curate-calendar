@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib';
-	import { createCalendar, getCalendars } from '$lib/remote/calendar.remote';
+	import { createCalendar, deleteCalendar, getCalendars } from '$lib/remote/calendar.remote';
 </script>
 
 <svelte:boundary>
@@ -9,40 +9,51 @@
 	{/snippet}
 
 	{@const calendars = await getCalendars()}
-	<div class="grid w-full sm:grid-cols-[auto_1fr] lg:grid-cols-[1fr_2fr_1fr]">
-		<div class="col-start-2 flex flex-col items-center gap-3 p-8">
-			<form
-				class="flex w-full items-center justify-evenly rounded-xl bg-green-300 p-3"
-				{...createCalendar}
-			>
-				<input
-					class={cn(
-						'rounded-md bg-white p-1',
-						(createCalendar.fields.calendarName.issues() ?? []).length != 0 && 'bg-red-100'
-					)}
-					{...createCalendar.fields.calendarName.as('text')}
-				/>
-				<input
-					class={cn(
-						'rounded-md bg-white p-1',
-						(createCalendar.fields.calendarUrl.issues() ?? []).length != 0 && 'bg-red-100'
-					)}
-					{...createCalendar.fields.calendarUrl.as('text')}
-				/>
-				<button class="size-10 rounded-lg bg-white text-2xl hover:bg-gray-200" onclick={() => {}}>
-					+
-				</button>
-			</form>
-
-			{#each calendars as calendar}
-				<a
-					class="flex w-full flex-col rounded-xl bg-green-200 p-2 text-left whitespace-pre-line hover:bg-green-300 lg:w-200"
-					href={`/${calendar.id}`}
-				>
-					<span class="font-bold">{calendar.name}</span>
-					<span class="max-w-full overflow-x-scroll text-nowrap">{calendar.url}</span>
-				</a>
-			{/each}
+	<form
+		class="grid w-full grid-cols-[min-content_1fr] gap-2 rounded-xl bg-green-300 p-3 text-right lg:flex-row"
+		{...createCalendar}
+	>
+		<label for={createCalendar.fields.calendarName.as('text').name}>Name</label>
+		<input
+			class={cn(
+				'rounded-md bg-white p-1',
+				(createCalendar.fields.calendarName.issues() ?? []).length != 0 && 'bg-red-100'
+			)}
+			{...createCalendar.fields.calendarName.as('text')}
+		/>
+		<label for={createCalendar.fields.calendarUrl.as('text').name}>Url</label>
+		<input
+			class={cn(
+				'rounded-md bg-white p-1',
+				(createCalendar.fields.calendarUrl.issues() ?? []).length != 0 && 'bg-red-100'
+			)}
+			{...createCalendar.fields.calendarUrl.as('text')}
+		/>
+		<div class="col-span-full flex w-full items-center justify-center">
+			<button class="rounded-lg bg-white p-2 pr-3 pl-3 hover:bg-gray-200" onclick={() => {}}>
+				Create +
+			</button>
 		</div>
-	</div>
+	</form>
+
+	{#each calendars as calendar}
+		<div
+			class="grid w-full min-w-0 grid-cols-[1fr_min-content] rounded-xl bg-green-200 p-2 hover:bg-green-300"
+		>
+			<a class="flex w-full min-w-0 flex-col text-left" href={`/${calendar.id}`}>
+				<span class="font-bold">{calendar.name}</span>
+				<span class="overflow-x-auto overflow-y-hidden whitespace-nowrap">{calendar.url}</span>
+			</a>
+			<div class="flex h-full items-center justify-center pr-2 pl-2">
+				<button
+					class="rounded-md bg-white pt-1.5 pr-3 pb-1.5 pl-3 hover:bg-gray-200"
+					onclick={() => {
+						deleteCalendar(calendar.id);
+					}}
+				>
+					X
+				</button>
+			</div>
+		</div>
+	{/each}
 </svelte:boundary>

@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { Session, User } from '$lib/server/db/schema';
 import { SESSION_COOKIE_NAME } from '$lib/server/auth';
 import * as argon2 from 'argon2';
+import { env } from '$env/dynamic/private';
 
 export const login = form(
 	v.object({
@@ -16,9 +17,10 @@ export const login = form(
 		const { cookies } = getRequestEvent();
 
 		const [user] = await db.select().from(User).where(eq(User.username, username));
-		if (user == undefined) error(401);
 
-		if (!(await argon2.verify(user.password, password))) error(403);
+		if (user == undefined || !(await argon2.verify(user.password, password))) {
+			return { error: 'Failed to log in' };
+		}
 
 		const [session] = await db
 			.insert(Session)
@@ -31,7 +33,9 @@ export const login = form(
 		if (session == undefined) error(500);
 
 		cookies.set(SESSION_COOKIE_NAME, session.id, {
-			path: '/'
+			path: '/',
+			expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+			secure: env.NODE_ENV != 'development'
 		});
 
 		redirect(307, `/`);
