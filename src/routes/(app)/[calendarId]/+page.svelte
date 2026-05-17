@@ -34,7 +34,7 @@
 		{#each calendarEvents as calendarEvent}
 			<button
 				class={cn(
-					'grid w-full grid-cols-[1fr_auto] rounded-xl bg-blue-300 p-2',
+					'grid w-full grid-cols-[1fr_auto] rounded-xl bg-red-200 p-2',
 					calendarEvent.curated && 'bg-green-300'
 				)}
 				onclick={async () =>

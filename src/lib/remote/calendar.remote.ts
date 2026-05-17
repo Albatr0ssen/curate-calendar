@@ -8,6 +8,7 @@ import * as v from 'valibot';
 import { getSession } from '$lib/server/auth';
 import { getCalendarEventViews, getIcsCalendar, getUserCalendar } from '$lib/calendar';
 import { timed } from '$lib';
+import { defaultCalendarBehaviorEnum } from '$lib/server/db/schema';
 
 export const getCalendars = query(async () => {
 	const { locals } = getRequestEvent();
@@ -24,16 +25,18 @@ export const getCalendars = query(async () => {
 export const createCalendar = form(
 	v.object({
 		calendarName: v.pipe(v.string(), v.minLength(1)),
-		calendarUrl: v.pipe(v.string(), v.minLength(1))
+		calendarUrl: v.pipe(v.string(), v.minLength(1)),
+		calendarBehavior: v.picklist(defaultCalendarBehaviorEnum)
 	}),
-	async ({ calendarName, calendarUrl }) => {
+	async ({ calendarName, calendarUrl, calendarBehavior }) => {
 		const { locals } = getRequestEvent();
 		if (locals.session == undefined) error(401);
 
 		await db.insert(Calendar).values({
 			userId: locals.session.userId,
 			name: calendarName,
-			url: calendarUrl
+			url: calendarUrl,
+			defaultBehavior: calendarBehavior
 		});
 	}
 );
@@ -70,7 +73,11 @@ export const curateCalendarEvent = command(
 		const calendar = await getUserCalendar(calendars, calendarId);
 		if (calendar == undefined) error(403);
 
-		if (becomeCurated) {
+		const insert =
+			(calendar.defaultBehavior == 'include' && !becomeCurated) ||
+			(calendar.defaultBehavior == 'exclude' && becomeCurated);
+
+		if (insert) {
 			await timed('insert event', async () => {
 				await db.insert(Event).values({
 					calendarId,

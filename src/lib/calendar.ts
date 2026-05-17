@@ -72,13 +72,18 @@ export async function getCalendarEventViews(calendarId: string) {
 
 	await timed('pusing calendar event views', async () => {
 		icsEvents.forEach((icsEvent) => {
+			const hasUid = curatedUids.has(icsEvent.uid);
+			const curated =
+				(calendar.defaultBehavior == 'include' && !hasUid) ||
+				(calendar.defaultBehavior == 'exclude' && hasUid);
+
 			calendarEventViews.push({
 				uid: icsEvent.uid,
 				summary: icsEvent.summary,
 				start: icsEvent.start.date,
 				end: icsEvent.end?.date,
 				location: icsEvent.location ?? '',
-				curated: curatedUids.has(icsEvent.uid)
+				curated
 			});
 		});
 	});

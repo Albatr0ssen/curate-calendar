@@ -1,0 +1,1 @@
+ALTER TABLE `calendars` ADD `default_behavior` text DEFAULT 'exclude' NOT NULL;

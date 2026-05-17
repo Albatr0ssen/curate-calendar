@@ -18,6 +18,8 @@ export const Session = sqliteTable('sessions', {
 		.notNull()
 });
 
+export const defaultCalendarBehaviorEnum = ['exclude', 'include'] as const;
+
 export const Calendar = sqliteTable('calendars', {
 	id: text('id')
 		.primaryKey()
@@ -30,7 +32,10 @@ export const Calendar = sqliteTable('calendars', {
 		.references(() => User.id)
 		.notNull(),
 	name: text('name').notNull(),
-	url: text('url').notNull()
+	url: text('url').notNull(),
+	defaultBehavior: text('default_behavior', { enum: defaultCalendarBehaviorEnum })
+		.default('exclude')
+		.notNull()
 });
 
 export const Event = sqliteTable('events', {
