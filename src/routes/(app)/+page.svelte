@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { cn } from '$lib';
 	import { createCalendar, deleteCalendar, getCalendars } from '$lib/remote/calendar.remote';
+	import type { DefaultCalendarBehavior } from '$lib/server/db/schema';
 
-	export const defaultCalendarBehaviorEnum = ['exclude', 'include'] as const;
+	export const defaultCalendarBehaviorEnum: DefaultCalendarBehavior[] = [
+		'exclude',
+		'include'
+	] as const;
 </script>
 
 <svelte:boundary>
@@ -35,7 +39,7 @@
 		<select
 			class={cn('w-min rounded-md bg-white p-1')}
 			{...createCalendar.fields.calendarBehavior.as('select')}
-			value={'include' satisfies (typeof defaultCalendarBehaviorEnum)[number]}
+			value={'include' satisfies DefaultCalendarBehavior}
 		>
 			{#each defaultCalendarBehaviorEnum as defaultBehavior}
 				<option>{defaultBehavior}</option>

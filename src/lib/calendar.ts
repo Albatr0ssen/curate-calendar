@@ -2,8 +2,8 @@ import { timed } from '$lib';
 import { getDate, getTime } from './date';
 import type { SessionData } from './server/auth';
 import { db } from './server/db';
-import { Calendar, Event } from './server/db/schema';
-import { convertIcsCalendar, generateIcsCalendar, type IcsCalendar } from 'ts-ics';
+import { Calendar, Event, type DefaultCalendarBehavior } from './server/db/schema';
+import { convertIcsCalendar, generateIcsCalendar, type IcsCalendar, type IcsEvent } from 'ts-ics';
 
 export type CalendarEventView = {
 	uid: string;
@@ -21,12 +21,12 @@ export async function getUserCalendar(calendars: SessionData['calendars'], calen
 	return calendars.find((calendar) => calendar.id == calendarId);
 }
 
-export function getCuratedUids(calendarEvents: (typeof Event.$inferSelect)[]) {
-	const curatedUids = new Set<string>();
+export function getFilteredUids(calendarEvents: (typeof Event.$inferSelect)[]) {
+	const filteredUids = new Set<string>();
 	calendarEvents.forEach((calEvent) => {
-		curatedUids.add(calEvent.eventUid);
+		filteredUids.add(calEvent.eventUid);
 	});
-	return curatedUids;
+	return filteredUids;
 }
 
 export async function getIcsCalendar(calendar: typeof Calendar.$inferSelect) {
@@ -50,6 +50,17 @@ export async function getIcsCalendar(calendar: typeof Calendar.$inferSelect) {
 	return structuredClone(icsCalendar);
 }
 
+export function isCurated(
+	icsEvent: IcsEvent,
+	filteredUids: Set<string>,
+	defaultBehavior: DefaultCalendarBehavior
+) {
+	const hasUid = filteredUids.has(icsEvent.uid);
+	const curated =
+		(defaultBehavior == 'include' && !hasUid) || (defaultBehavior == 'exclude' && hasUid);
+	return curated;
+}
+
 export async function getCalendarEventViews(calendarId: string) {
 	const calendar = await timed('calendar event views', async () => {
 		return await db.query.Calendar.findFirst({
@@ -66,24 +77,19 @@ export async function getCalendarEventViews(calendarId: string) {
 
 	const icsCalendar = await getIcsCalendar(calendar);
 	const calendarEventViews: CalendarEventView[] = [];
-	const curatedUids = getCuratedUids(calendar.events);
+	const filteredUids = getFilteredUids(calendar.events);
 
 	const icsEvents = icsCalendar.events ?? [];
 
 	await timed('pusing calendar event views', async () => {
 		icsEvents.forEach((icsEvent) => {
-			const hasUid = curatedUids.has(icsEvent.uid);
-			const curated =
-				(calendar.defaultBehavior == 'include' && !hasUid) ||
-				(calendar.defaultBehavior == 'exclude' && hasUid);
-
 			calendarEventViews.push({
 				uid: icsEvent.uid,
 				summary: icsEvent.summary,
 				start: icsEvent.start.date,
 				end: icsEvent.end?.date,
 				location: icsEvent.location ?? '',
-				curated
+				curated: isCurated(icsEvent, filteredUids, calendar.defaultBehavior)
 			});
 		});
 	});
@@ -103,12 +109,14 @@ export async function getCuratedCalendar(calendarPid: string) {
 	if (calendar == undefined) return undefined;
 
 	const icsCalendar = await getIcsCalendar(calendar);
-	const curatedUids = getCuratedUids(calendar.events);
+	const filteredUids = getFilteredUids(calendar.events);
 
 	icsCalendar.name = calendar.name;
 
 	if (icsCalendar.events != undefined) {
-		icsCalendar.events = icsCalendar.events.filter((icsEvent) => curatedUids.has(icsEvent.uid));
+		icsCalendar.events = icsCalendar.events.filter((icsEvent) =>
+			isCurated(icsEvent, filteredUids, calendar.defaultBehavior)
+		);
 	}
 
 	return generateIcsCalendar(icsCalendar);

@@ -19,6 +19,7 @@ export const Session = sqliteTable('sessions', {
 });
 
 export const defaultCalendarBehaviorEnum = ['exclude', 'include'] as const;
+export type DefaultCalendarBehavior = (typeof defaultCalendarBehaviorEnum)[number];
 
 export const Calendar = sqliteTable('calendars', {
 	id: text('id')

@@ -57,7 +57,8 @@ export const getCalendarEvents = query(v.string(), async (calendarId) => {
 	return {
 		calendarId: calendar.id,
 		calendarPid: calendar.pid,
-		calendarEvents: await getCalendarEventViews(calendarId)
+		calendarEvents: await getCalendarEventViews(calendarId),
+		incomingCalendarUrl: calendar.url
 	};
 });
 

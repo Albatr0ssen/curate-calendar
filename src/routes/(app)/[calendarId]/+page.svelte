@@ -12,13 +12,16 @@
 		<span>loading</span>
 	{/snippet}
 
-	{@const { calendarId, calendarPid, calendarEvents } = await getCalendarEvents(params.calendarId)}
+	{@const { calendarId, calendarPid, calendarEvents, incomingCalendarUrl } =
+		await getCalendarEvents(params.calendarId)}
 	{#if calendarEvents == undefined || calendarEvents.length == 0}
 		<div class="flex w-full flex-col rounded-xl bg-red-200 p-3 whitespace-pre-line">
 			<span class="font-bold">No events</span>
 		</div>
 	{:else}
-		<div class="flex w-full gap-3 rounded-xl bg-green-200 p-2 whitespace-pre-line">
+		<div
+			class="flex w-full justify-evenly gap-3 rounded-xl bg-green-200 p-2 whitespace-pre-line lg:justify-start"
+		>
 			<a href="/" class="w-min rounded-md bg-white pt-2 pr-4 pb-2 pl-4 hover:bg-gray-200"> back </a>
 			<button
 				class="w-min rounded-md bg-white pt-2 pr-4 pb-2 pl-4 hover:bg-gray-200"
@@ -28,6 +31,14 @@
 				}}
 			>
 				link
+			</button>
+			<button
+				class="w-min rounded-md bg-white pt-2 pr-4 pb-2 pl-4 whitespace-nowrap hover:bg-gray-200"
+				onclick={async () => {
+					await navigator.clipboard.writeText(incomingCalendarUrl);
+				}}
+			>
+				incoming calendar
 			</button>
 		</div>
 
